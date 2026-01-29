@@ -120,3 +120,4 @@ async def update_stock(
         message="Stock updated",
         data=ProductPublic.model_validate(result),
     )
+# Product API Test
