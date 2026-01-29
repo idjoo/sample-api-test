@@ -1,0 +1,28 @@
+substitutions:
+  _SERVICE: sample-api
+  _REGION: asia-southeast2
+  _REGISTRY: docker
+  _IMAGE: ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REGISTRY}/${_SERVICE}
+
+steps:
+  - name: gcr.io/cloud-builders/gcloud
+    script: |
+      #!/bin/bash
+
+      sed -i "s|{{PROJECT_ID}}|${PROJECT_ID}|g" ci/*.yaml
+      sed -i "s|{{_REGION}}|${_REGION}|g" ci/*.yaml
+      sed -i "s|{{_IMAGE}}|${_IMAGE}|g" ci/*.yaml
+      sed -i "s|{{_SERVICE}}|${_SERVICE}|g" ci/*.yaml
+
+  - name: gcr.io/k8s-skaffold/skaffold
+    entrypoint: skaffold
+    args:
+      - run
+      - --filename=ci/skaffold.yaml
+
+serviceAccount: projects/${PROJECT_ID}/serviceAccounts/builder@${PROJECT_ID}.iam.gserviceaccount.com
+logsBucket: ${PROJECT_ID}_cloudbuild
+
+options:
+  dynamicSubstitutions: true
+  automapSubstitutions: true

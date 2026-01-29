@@ -1,0 +1,57 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[project]
+name = "oracle-sample-api"
+version = "0.0.1"
+description = "Sample API with intentional vulnerabilities for Oracle testing demos"
+readme = "README.md"
+requires-python = ">=3.13"
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+  "fastapi[all]>=0.115.8",
+  "pydantic-settings>=2.7.1",
+  "sqlmodel>=0.0.22",
+  "sqlalchemy[asyncio]>=2.0.0",
+  "asyncpg>=0.30.0",
+  "psycopg[binary]>=3.2.0",
+  "alembic>=1.14.0",
+  "fastapi-pagination>=0.12.0",
+  "aiohttp>=3.11.0",
+  "opentelemetry-api>=1.29.0",
+  "opentelemetry-sdk>=1.29.0",
+  "opentelemetry-semantic-conventions>=0.50b0",
+  "wrapt>=1.17.0",
+]
+
+scripts.app = "src:server"
+
+[dependency-groups]
+dev = [
+  "coverage>=7.6.10",
+  "pre-commit>=4.1",
+  "pytest>=8.3.0",
+  "pytest-asyncio>=0.25.3",
+  "pytest-cov>=6",
+  "ruff>=0.9.4",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.uv]
+package = true
+
+[tool.ruff]
+line-length = 80
+
+lint.extend-select = ["ASYNC", "F", "FAST", "I", "RUF", "UP"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

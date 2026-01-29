@@ -1,0 +1,19 @@
+service: service # TODO: service name
+
+host: "0.0.0.0"
+port: 8080
+
+environment: local
+
+logging:
+  level: debug
+
+database:
+  # url: ""
+  kind: "postgresql"
+  adapter: "psycopg"
+  username: "username"
+  password: "password"
+  host: "localhost"
+  port: 5432
+  name: "database"
