@@ -23,6 +23,7 @@ from src.routers import (
     SampleRouter,
     UserRouter,
 )
+from src.routers.product_router import ProductRouter
 
 
 @asynccontextmanager
@@ -79,6 +80,7 @@ app.include_router(AuthRouter)
 app.include_router(UserRouter)
 app.include_router(ItemRouter)
 app.include_router(SampleRouter)
+app.include_router(ProductRouter)
 
 
 # ===============
