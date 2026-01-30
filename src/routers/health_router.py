@@ -29,3 +29,19 @@ async def health(
         HealthCheck: Returns a JSON response with the health status
     """
     return await health_service.check()
+
+
+@HealthRouter.get(
+    "/ready",
+    summary="Readiness Check",
+    response_description="Return HTTP Status Code 200 when ready",
+    status_code=status.HTTP_200_OK,
+)
+async def ready() -> dict:
+    """
+    ## Readiness Check
+    Simple endpoint to check if the service is ready to accept requests.
+    Returns:
+        dict: Returns ready status
+    """
+    return {"ready": True}
