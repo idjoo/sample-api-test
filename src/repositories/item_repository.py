@@ -1,13 +1,16 @@
 from uuid import UUID
 
 from fastapi_pagination.ext.sqlmodel import paginate
+from decimal import Decimal
+
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import delete, insert, select, update
 
 from src.dependencies import Database, Logger, tracer
 from src.exceptions import BaseError
 from src.exceptions.item_exception import ItemAlreadyExistsError, ItemNotFoundError
-from src.models.item_model import Item, ItemCreate, ItemUpdate
+from src.models.item_model import Item, ItemCreate, ItemStats, ItemUpdate
 from src.schemas import Page
 
 
@@ -151,6 +154,37 @@ class ItemRepository:
             self.logger.error(
                 {
                     "message": "Database error during item delete",
+                    "error": str(error),
+                },
+                exc_info=True,
+            )
+            raise BaseError("Database Internal Error") from error
+
+    @tracer.observe()
+    async def get_stats(self) -> ItemStats:
+        """Get aggregate statistics for all items."""
+        try:
+            result = await self.db.exec(
+                select(
+                    func.count(Item.id).label("total_items"),
+                    func.coalesce(func.sum(Item.quantity), 0).label("total_quantity"),
+                    func.coalesce(func.sum(Item.price * Item.quantity), Decimal("0.00")).label("total_value"),
+                    func.coalesce(func.avg(Item.price), Decimal("0.00")).label("avg_price"),
+                    func.count(func.distinct(Item.category)).label("categories"),
+                )
+            )
+            row = result.one()
+            return ItemStats(
+                total_items=row.total_items,
+                total_quantity=row.total_quantity,
+                total_value=row.total_value,
+                avg_price=row.avg_price,
+                categories=row.categories,
+            )
+        except Exception as error:
+            self.logger.error(
+                {
+                    "message": "Database error during item stats",
                     "error": str(error),
                 },
                 exc_info=True,
