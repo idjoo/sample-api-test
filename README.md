@@ -63,3 +63,4 @@ Detailed documentation is available in the `docs/` directory:
 ## 📄 License
 
 MIT
+# Updated for E2E test
