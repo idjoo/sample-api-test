@@ -60,6 +60,10 @@ Detailed documentation is available in the `docs/` directory:
     ```
     Visit [http://localhost:8080/docs](http://localhost:8080/docs) for API docs.
 
+## 🧪 Testing
+
+This project is tested with [Oracle](https://github.com/idjoo/oracle) - an automated API testing platform.
+
 ## 📄 License
 
 MIT
