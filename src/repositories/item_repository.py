@@ -81,6 +81,47 @@ class ItemRepository:
             raise BaseError("Database Internal Error") from error
 
     @tracer.observe()
+    async def search(
+        self,
+        query: str | None = None,
+        min_price: float | None = None,
+        max_price: float | None = None,
+        category: str | None = None,
+    ) -> Page[Item]:
+        """Search items with flexible filtering criteria."""
+        try:
+            stmt = select(Item)
+
+            # Text search on name and description
+            if query:
+                search_pattern = f"%{query}%"
+                stmt = stmt.where(
+                    (Item.name.ilike(search_pattern)) |
+                    (Item.description.ilike(search_pattern))
+                )
+
+            # Price range filters
+            if min_price is not None:
+                stmt = stmt.where(Item.price >= min_price)
+            if max_price is not None:
+                stmt = stmt.where(Item.price <= max_price)
+
+            # Category filter
+            if category:
+                stmt = stmt.where(Item.category == category)
+
+            return await paginate(self.db, stmt)
+        except Exception as error:
+            self.logger.error(
+                {
+                    "message": "Database error during item search",
+                    "error": str(error),
+                },
+                exc_info=True,
+            )
+            raise BaseError("Database Internal Error") from error
+
+    @tracer.observe()
     async def read(self, id: UUID) -> Item:
         try:
             result = (

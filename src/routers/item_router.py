@@ -64,6 +64,41 @@ async def read_items(
     return await item_service.read_all(owner_id=owner_id)
 
 
+@ItemRouter.get("/search", response_model=Page[ItemPublic])
+@tracer.observe()
+async def search_items(
+    logger: Logger,
+    item_service: Annotated[ItemService, Depends()],
+    q: str | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None,
+    category: str | None = None,
+):
+    """
+    Search items with flexible filtering.
+
+    - **q**: Search query string to match against item name and description
+    - **min_price**: Minimum price filter (inclusive)
+    - **max_price**: Maximum price filter (inclusive)
+    - **category**: Filter by category name
+
+    Returns paginated list of matching items.
+    """
+    logger.info({
+        "message": "Searching items",
+        "query": q,
+        "min_price": min_price,
+        "max_price": max_price,
+        "category": category,
+    })
+    return await item_service.search(
+        query=q,
+        min_price=min_price,
+        max_price=max_price,
+        category=category,
+    )
+
+
 @ItemRouter.get("/{item_id}", response_model=Response[ItemPublic])
 @tracer.observe()
 async def read_item(

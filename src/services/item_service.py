@@ -59,6 +59,32 @@ class ItemService:
             return result
 
     @tracer.observe()
+    async def search(
+        self,
+        query: str | None = None,
+        min_price: float | None = None,
+        max_price: float | None = None,
+        category: str | None = None,
+    ) -> Page[Item]:
+        """Search items with flexible filtering criteria."""
+        async with tracer.track("logic:search_items") as span:
+            self.logger.info({
+                "message": "Searching items",
+                "query": query,
+                "min_price": min_price,
+                "max_price": max_price,
+                "category": category,
+            })
+            result = await self.item_repository.search(
+                query=query,
+                min_price=min_price,
+                max_price=max_price,
+                category=category,
+            )
+            span.set_attribute("items.count", len(result.items))
+            return result
+
+    @tracer.observe()
     async def read(self, id: UUID) -> Item:
         self.logger.debug({"message": "Reading item", "item_id": str(id)})
         return await self.item_repository.read(id=id)
