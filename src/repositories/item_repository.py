@@ -160,7 +160,7 @@ class ItemRepository:
 
     @tracer.observe()
     async def count(self) -> int:
-        """Count total number of items."""
+        """Count total number of items in the database."""
         try:
             result = await self.db.exec(select(func.count()).select_from(Item))
             return result.one()
