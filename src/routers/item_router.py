@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Header
 
 from src.dependencies import Logger, tracer
 from src.exceptions.user_exception import UnauthorizedError
-from src.models.item_model import ItemCreate, ItemPublic, ItemUpdate
+from src.models.item_model import ItemCreate, ItemPublic, ItemStats, ItemUpdate
 from src.schemas import Page, Response
 from src.services.auth_service import AuthService
 from src.services.item_service import ItemService
@@ -62,6 +62,22 @@ async def read_items(
         {"message": "Fetching items", "owner_id": str(owner_id) if owner_id else None}
     )
     return await item_service.read_all(owner_id=owner_id)
+
+
+@ItemRouter.get("/stats", response_model=Response[ItemStats])
+@tracer.observe()
+async def get_item_stats(
+    logger: Logger,
+    item_service: Annotated[ItemService, Depends()],
+):
+    """Get aggregate statistics for all items."""
+    logger.debug({"message": "Getting item statistics"})
+    stats = await item_service.get_stats()
+    return Response(
+        status_code=200,
+        message="Item statistics retrieved",
+        data=stats,
+    )
 
 
 @ItemRouter.get("/{item_id}", response_model=Response[ItemPublic])

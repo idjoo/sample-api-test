@@ -41,3 +41,13 @@ class ItemUpdate(SQLModel):
     price: Decimal | None = None
     quantity: int | None = None
     category: str | None = None
+
+
+class ItemStats(SQLModel):
+    """Statistics about items in the inventory."""
+
+    total_items: int
+    total_quantity: int
+    total_value: Decimal
+    avg_price: Decimal
+    categories: int
