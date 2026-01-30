@@ -102,3 +102,9 @@ class ItemService:
             raise ForbiddenError()
         self.logger.debug({"message": "Deleting item", "item_id": str(id)})
         return await self.item_repository.delete(id=id)
+
+    @tracer.observe()
+    async def count(self) -> int:
+        """Get total count of items."""
+        self.logger.debug({"message": "Counting items"})
+        return await self.item_repository.count()

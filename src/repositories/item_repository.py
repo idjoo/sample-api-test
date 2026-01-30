@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi_pagination.ext.sqlmodel import paginate
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import delete, insert, select, update
 
@@ -151,6 +152,22 @@ class ItemRepository:
             self.logger.error(
                 {
                     "message": "Database error during item delete",
+                    "error": str(error),
+                },
+                exc_info=True,
+            )
+            raise BaseError("Database Internal Error") from error
+
+    @tracer.observe()
+    async def count(self) -> int:
+        """Count total number of items."""
+        try:
+            result = await self.db.exec(select(func.count()).select_from(Item))
+            return result.one()
+        except Exception as error:
+            self.logger.error(
+                {
+                    "message": "Database error during item count",
                     "error": str(error),
                 },
                 exc_info=True,

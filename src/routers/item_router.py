@@ -64,6 +64,22 @@ async def read_items(
     return await item_service.read_all(owner_id=owner_id)
 
 
+@ItemRouter.get("/count", response_model=Response[int])
+@tracer.observe()
+async def count_items(
+    logger: Logger,
+    item_service: Annotated[ItemService, Depends()],
+):
+    """Get total count of items."""
+    logger.debug({"message": "Counting items"})
+    count = await item_service.count()
+    return Response(
+        status_code=200,
+        message="Item count retrieved",
+        data=count,
+    )
+
+
 @ItemRouter.get("/{item_id}", response_model=Response[ItemPublic])
 @tracer.observe()
 async def read_item(
