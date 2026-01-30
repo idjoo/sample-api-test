@@ -105,6 +105,6 @@ class ItemService:
 
     @tracer.observe()
     async def count(self) -> int:
-        """Get total count of items."""
+        """Get total count of all items in the inventory."""
         self.logger.debug({"message": "Counting items"})
         return await self.item_repository.count()
