@@ -1,13 +1,16 @@
 from uuid import UUID
 
 from fastapi_pagination.ext.sqlmodel import paginate
+from decimal import Decimal
+
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import delete, insert, select, update
 
 from src.dependencies import Database, Logger, tracer
 from src.exceptions import BaseError
 from src.exceptions.item_exception import ItemAlreadyExistsError, ItemNotFoundError
-from src.models.item_model import Item, ItemCreate, ItemUpdate
+from src.models.item_model import Item, ItemCreate, ItemStats, ItemUpdate
 from src.schemas import Page
 
 
@@ -151,6 +154,48 @@ class ItemRepository:
             self.logger.error(
                 {
                     "message": "Database error during item delete",
+                    "error": str(error),
+                },
+                exc_info=True,
+            )
+            raise BaseError("Database Internal Error") from error
+
+    @tracer.observe()
+    async def get_stats(self) -> ItemStats:
+        """Get aggregate statistics about all items."""
+        try:
+            # Get basic counts and aggregates
+            result = await self.db.exec(
+                select(
+                    func.count(Item.id).label("total_items"),
+                    func.coalesce(func.sum(Item.quantity), 0).label("total_quantity"),
+                    func.coalesce(func.sum(Item.price * Item.quantity), Decimal("0.00")).label("total_value"),
+                    func.coalesce(func.avg(Item.price), Decimal("0.00")).label("average_price"),
+                )
+            )
+            row = result.one()
+
+            # Get category breakdown
+            category_result = await self.db.exec(
+                select(Item.category, func.count(Item.id))
+                .group_by(Item.category)
+            )
+            categories = {
+                cat or "uncategorized": count
+                for cat, count in category_result.all()
+            }
+
+            return ItemStats(
+                total_items=row.total_items or 0,
+                total_quantity=row.total_quantity or 0,
+                total_value=Decimal(str(row.total_value or 0)),
+                categories=categories,
+                average_price=Decimal(str(round(row.average_price or 0, 2))),
+            )
+        except Exception as error:
+            self.logger.error(
+                {
+                    "message": "Database error during get_stats",
                     "error": str(error),
                 },
                 exc_info=True,

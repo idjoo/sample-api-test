@@ -5,7 +5,7 @@ from fastapi import Depends
 
 from src.dependencies import Logger, tracer
 from src.exceptions.user_exception import ForbiddenError
-from src.models.item_model import Item, ItemCreate, ItemUpdate
+from src.models.item_model import Item, ItemCreate, ItemStats, ItemUpdate
 from src.repositories.item_repository import ItemRepository
 from src.schemas import Page
 
@@ -102,3 +102,9 @@ class ItemService:
             raise ForbiddenError()
         self.logger.debug({"message": "Deleting item", "item_id": str(id)})
         return await self.item_repository.delete(id=id)
+
+    @tracer.observe()
+    async def get_stats(self) -> ItemStats:
+        """Get aggregate statistics about all items."""
+        self.logger.debug({"message": "Computing item statistics"})
+        return await self.item_repository.get_stats()
