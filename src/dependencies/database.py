@@ -51,7 +51,7 @@ async def init():
     from alembic.config import Config as AlembicConfig
 
     await asyncio.to_thread(
-        command.upgrade, config=AlembicConfig("alembic.ini"), revision="head"
+        command.upgrade, config=AlembicConfig("db/alembic.ini"), revision="head"
     )
 
 
